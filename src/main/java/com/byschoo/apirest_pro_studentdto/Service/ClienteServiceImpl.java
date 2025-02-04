@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.byschoo.apirest_pro_studentdto.Model.Cliente;
 import com.byschoo.apirest_pro_studentdto.Repository.iClienteRepository;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
 /**
@@ -81,10 +83,25 @@ public class ClienteServiceImpl implements iClienteService {
         clienteRepository.delete(clienteDelete);
 
         try {
-            ObjectMapper objectMapper = new ObjectMapper(); // ObjectMapper es la clase de Jackson que se encarga de convertir objetos Java a JSON y viceversa.
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Para el formato JSON legible
-            String clienteJson = objectMapper.writeValueAsString(clienteDelete); // Convertir el objeto Cliente a una cadena JSON.
-            return "EL CLIENTE:\n\n" + clienteJson + "\n\n!! HA SIDO BORRADO EXITOSAMENTE !!";
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            // 1. Crea un nodo raíz para el JSON
+            ObjectNode rootNode = objectMapper.createObjectNode();
+
+            // 2. Convierte el objeto Cliente a JSON y añádelo al nodo raíz bajo la clave "cliente"
+            String clienteJson = objectMapper.writeValueAsString(clienteDelete);
+            JsonNode clienteNode = objectMapper.readTree(clienteJson); // Parsea el JSON del cliente
+            rootNode.set("cliente", clienteNode);
+
+            // 3. Añade el mensaje al nodo raíz
+            rootNode.put("mensaje", "!! SE HA BORRADO EXITOSAMENTE !!");
+
+            // 4. Convierte el nodo raíz a una cadena JSON
+            String respuestaJson = objectMapper.writeValueAsString(rootNode);
+
+            return respuestaJson;
+
         } catch (Exception e) {
             return "Error al convertir el cliente a JSON: " + e.getMessage();
         }
