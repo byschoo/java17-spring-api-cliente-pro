@@ -2,14 +2,14 @@ package com.byschoo.apirest_pro_studentdto.Service;
 
 import java.util.List;
 
-
+import com.byschoo.apirest_pro_studentdto.DTO.ClienteDTO;
 import com.byschoo.apirest_pro_studentdto.Model.Cliente;
 
 public interface iClienteService {
 
     // POSTMAPPING
-    Cliente save(Cliente cliente); // El método "save" guarda y actualiza. No es necesario un método update.
-    List<Cliente> saveAll(List<Cliente> clientes);
+    Cliente save(ClienteDTO clienteDTO); // El método "save" guarda y actualiza. No es necesario un método update.
+    List<Cliente> saveAll(List<ClienteDTO> clientesDTO);
     //-----------------------------------------
 
 
@@ -26,7 +26,7 @@ public interface iClienteService {
 
 
     // DELETEMAPPING
-    String delete(Long id); //CRUDRepository tiene métodos para eliminar por el ID o enviando la entidad completa.
+    Cliente delete(Long id); //CRUDRepository tiene métodos para eliminar por el ID o enviando la entidad completa.
     //-----------------------------------------
 
 }

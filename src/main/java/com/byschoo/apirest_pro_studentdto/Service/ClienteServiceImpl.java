@@ -1,17 +1,15 @@
 package com.byschoo.apirest_pro_studentdto.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.byschoo.apirest_pro_studentdto.DTO.ClienteDTO;
 import com.byschoo.apirest_pro_studentdto.Model.Cliente;
 import com.byschoo.apirest_pro_studentdto.Repository.iClienteRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
 /**
@@ -28,32 +26,41 @@ public class ClienteServiceImpl implements iClienteService {
     @Autowired
     private iClienteRepository clienteRepository;
 
-    // POSTMAPPING
+    // POSTMAPPING ---------------------------------------------------------------------------------
     @Transactional
     @Override
-    public Cliente save(Cliente cliente) { // El método "save" guarda y actualiza. No es necesario un método update.
+    public Cliente save(ClienteDTO clienteDTO) {
+        Cliente cliente = convertirDeDTOaEntidad(clienteDTO); // Llama al método de conversión
         return clienteRepository.save(cliente);
     }
 
     @Transactional
-    public List<Cliente> saveAll(List<Cliente> clientes){  
-        return(List<Cliente>) clienteRepository.saveAll(clientes);
+    @Override
+    public List<Cliente> saveAll(List<ClienteDTO> clientesDTO) {
+        List<Cliente> clientes = new ArrayList<>();
+
+        for (ClienteDTO clienteDTO : clientesDTO) {
+            Cliente cliente = convertirDeDTOaEntidad(clienteDTO); // Usamos el método de conversión
+            clientes.add(cliente);
+        }
+
+        return (List<Cliente>) clienteRepository.saveAll(clientes);
     }
-    //-----------------------------------------
+    //---------------------------------------------------------------------------------------------
 
 
-    // GETMAPPING
+    // GETMAPPING ---------------------------------------------------------------------------------
     @Transactional(readOnly = true) // Toda transacción de consulta debe ser de solo lectura.
     @Override
     public List<Cliente> findAll() {
-        return (List<Cliente>) clienteRepository.findAll();
+        return (List<Cliente>) clienteRepository.findAll(); // Obtiene las entidades directamente del repositorio
     }
-
+    
 
     @Transactional(readOnly = true) // Toda transacción de consulta debe ser de solo lectura.
     @Override
     public Cliente findById(Long id) {
-        return clienteRepository.findById(id).orElseThrow( 
+        return clienteRepository.findById(id).orElseThrow( // Obtiene la entidad directamente del repositorio
             () -> new RuntimeException("El cliente con el " + id + " no fue encontrado."));
     }
 
@@ -61,51 +68,40 @@ public class ClienteServiceImpl implements iClienteService {
     @Transactional(readOnly = true) // Toda transacción de consulta debe ser de solo lectura.
     @Override
     public List<Cliente> findByNombreLike(String nombre){
-        return (List<Cliente>) clienteRepository.findByNombreLike(nombre);
+        return (List<Cliente>) clienteRepository.findByNombreLike(nombre);  // Obtiene las entidades directamente del repositorio
     }
     
     
     @Transactional(readOnly = true) // Toda transacción de consulta debe ser de solo lectura.
     @Override
     public List<Cliente> findByNameOrLastName(String nombre, String apellido){
-        return (List<Cliente>) clienteRepository.findByNameOrLastName(nombre, apellido);
+        return (List<Cliente>) clienteRepository.findByNameOrLastName(nombre, apellido);  // Obtiene las entidades directamente del repositorio
     }    
-    //-----------------------------------------
+    //----------------------------------------------------------------------------------------------
 
 
-    // DELETEMAPPING
+    // DELETEMAPPING -------------------------------------------------------------------------------
     @Transactional
     @Override
-    public String delete(Long id) {
+    public Cliente delete(Long id) {
         Cliente clienteDelete = clienteRepository.findById(id).orElseThrow(
             () -> new RuntimeException("El cliente con el " + id + " no fue encontrado."));
 
         clienteRepository.delete(clienteDelete);
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-            // 1. Crea un nodo raíz para el JSON
-            ObjectNode rootNode = objectMapper.createObjectNode();
-
-            // 2. Convierte el objeto Cliente a JSON y añádelo al nodo raíz bajo la clave "cliente"
-            String clienteJson = objectMapper.writeValueAsString(clienteDelete);
-            JsonNode clienteNode = objectMapper.readTree(clienteJson); // Parsea el JSON del cliente
-            rootNode.set("cliente", clienteNode);
-
-            // 3. Añade el mensaje al nodo raíz
-            rootNode.put("mensaje", "!! SE HA BORRADO EXITOSAMENTE !!");
-
-            // 4. Convierte el nodo raíz a una cadena JSON
-            String respuestaJson = objectMapper.writeValueAsString(rootNode);
-
-            return respuestaJson;
-
-        } catch (Exception e) {
-            return "Error al convertir el cliente a JSON: " + e.getMessage();
-        }
+        return clienteDelete;
     }
-    //-----------------------------------------
+    //----------------------------------------------------------------------------------------------
+
+
+    // Métodos para convertir
+    private Cliente convertirDeDTOaEntidad(ClienteDTO clienteDTO) {
+        return Cliente.builder()
+            .nombre(clienteDTO.getNombre())
+            .apellido(clienteDTO.getApellido())
+            .correo(clienteDTO.getCorreo())
+            .edad(clienteDTO.getEdad())
+            .fechaRegistro(clienteDTO.getFechaRegistro())
+            .build();
+    }
 
 }
