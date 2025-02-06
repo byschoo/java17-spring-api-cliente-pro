@@ -26,17 +26,18 @@ public class ClienteServiceImpl implements iClienteService {
     @Autowired
     private iClienteRepository clienteRepository;
 
-    // POSTMAPPING ---------------------------------------------------------------------------------
+    // POSTMAPPING ------------------------------------------------------------------------------------
     @Transactional
     @Override
-    public Cliente save(ClienteDTO clienteDTO) {
+    public Cliente saveCliente(ClienteDTO clienteDTO) {
         Cliente cliente = convertirDeDTOaEntidad(clienteDTO); // Llama al método de conversión
         return clienteRepository.save(cliente);
     }
 
+    //-------------------------------------------------------------------------------------------------
     @Transactional
     @Override
-    public List<Cliente> saveAll(List<ClienteDTO> clientesDTO) {
+    public List<Cliente> saveAllClientes(List<ClienteDTO> clientesDTO) {
         List<Cliente> clientes = new ArrayList<>();
 
         for (ClienteDTO clienteDTO : clientesDTO) {
@@ -46,54 +47,88 @@ public class ClienteServiceImpl implements iClienteService {
 
         return (List<Cliente>) clienteRepository.saveAll(clientes);
     }
-    //---------------------------------------------------------------------------------------------
-
-
-    // GETMAPPING ---------------------------------------------------------------------------------
+    //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    
+    // GETMAPPING -------------------------------------------------------------------------------------
     @Transactional(readOnly = true) // Toda transacción de consulta debe ser de solo lectura.
     @Override
-    public List<Cliente> findAll() {
-        return (List<Cliente>) clienteRepository.findAll(); // Obtiene las entidades directamente del repositorio
+    public List<Cliente> findAllClientes() {
+        return (List<Cliente>) clienteRepository.findAll(); // Obtiene las entidades del repositorio
     }
     
-
+    //-------------------------------------------------------------------------------------------------
     @Transactional(readOnly = true) // Toda transacción de consulta debe ser de solo lectura.
     @Override
-    public Cliente findById(Long id) {
-        return clienteRepository.findById(id).orElseThrow( // Obtiene la entidad directamente del repositorio
+    public Cliente findClienteById(Long id) {
+        return clienteRepository.findById(id).orElseThrow( // Obtiene la entidad del repositorio
             () -> new RuntimeException("El cliente con el " + id + " no fue encontrado."));
     }
 
-
+    //-------------------------------------------------------------------------------------------------
     @Transactional(readOnly = true) // Toda transacción de consulta debe ser de solo lectura.
     @Override
-    public List<Cliente> findByNombreLike(String nombre){
-        return (List<Cliente>) clienteRepository.findByNombreLike(nombre);  // Obtiene las entidades directamente del repositorio
+    public List<Cliente> findClientesByNombreLike(String nombre){
+        List<Cliente> clientes = clienteRepository.findByNombreLike(nombre);
+            
+            if (clientes.isEmpty()) {
+                throw new RuntimeException("No se encontraron clientes con el nombre: " + nombre);
+            }
+        
+        return clientes;
     }
     
-    
+    //-------------------------------------------------------------------------------------------------
     @Transactional(readOnly = true) // Toda transacción de consulta debe ser de solo lectura.
     @Override
-    public List<Cliente> findByNameOrLastName(String nombre, String apellido){
-        return (List<Cliente>) clienteRepository.findByNameOrLastName(nombre, apellido);  // Obtiene las entidades directamente del repositorio
+    public List<Cliente> findClientesByNameOrLastName(String nombre, String apellido){
+        return (List<Cliente>) clienteRepository.findByNameOrLastName(nombre, apellido);  // Obtiene las entidades del repositorio
     }    
-    //----------------------------------------------------------------------------------------------
+    //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-    // DELETEMAPPING -------------------------------------------------------------------------------
+    // PUTMAPPING -------------------------------------------------------------------------------------
     @Transactional
     @Override
-    public Cliente delete(Long id) {
-        Cliente clienteDelete = clienteRepository.findById(id).orElseThrow(
-            () -> new RuntimeException("El cliente con el " + id + " no fue encontrado."));
+    public Cliente updateCliente(ClienteDTO clienteDTO) {
+        Cliente clienteUpdate = clienteRepository.findById(clienteDTO.getId()).orElseThrow( 
+            () -> new RuntimeException("EL CLIENTE CON EL " + clienteDTO.getId() + " NO FUE ENCONTRADO."));
 
-        clienteRepository.delete(clienteDelete);
-        return clienteDelete;
+        clienteUpdate.setNombre(clienteDTO.getNombre());
+        clienteUpdate.setApellido(clienteDTO.getApellido());
+        clienteUpdate.setCorreo(clienteDTO.getCorreo());
+        clienteUpdate.setEdad(clienteDTO.getEdad());
+        clienteUpdate.setFechaRegistro(clienteDTO.getFechaRegistro());
+
+        return clienteRepository.save(clienteUpdate);
     }
-    //----------------------------------------------------------------------------------------------
+
+    //-------------------------------------------------------------------------------------------------
+    @Transactional
+    @Override
+    public Cliente updateCliente(Long id, ClienteDTO clienteDTO) {
+        Cliente clienteUpdate = clienteRepository.findById(id).orElseThrow( 
+            () -> new RuntimeException("EL CLIENTE CON EL " + id + " NO FUE ENCONTRADO."));
+
+        clienteUpdate.setNombre(clienteDTO.getNombre());
+        clienteUpdate.setApellido(clienteDTO.getApellido());
+        clienteUpdate.setCorreo(clienteDTO.getCorreo());
+        clienteUpdate.setEdad(clienteDTO.getEdad());
+        clienteUpdate.setFechaRegistro(clienteDTO.getFechaRegistro());
+
+        return clienteRepository.save(clienteUpdate);
+    }
+    //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-    // Métodos para convertir
+    // DELETEMAPPING ----------------------------------------------------------------------------------
+    @Transactional
+    @Override
+    public void delete(Cliente cliente) {
+        clienteRepository.delete(cliente);
+    }
+    //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+    // Métodos DeDTOaENTIDAD --------------------------------------------------------------------------
     private Cliente convertirDeDTOaEntidad(ClienteDTO clienteDTO) {
         return Cliente.builder()
             .nombre(clienteDTO.getNombre())
@@ -103,5 +138,6 @@ public class ClienteServiceImpl implements iClienteService {
             .fechaRegistro(clienteDTO.getFechaRegistro())
             .build();
     }
+    //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 }
