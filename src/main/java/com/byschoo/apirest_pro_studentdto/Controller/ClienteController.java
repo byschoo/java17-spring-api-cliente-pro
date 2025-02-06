@@ -94,6 +94,16 @@ public class ClienteController {
     
         try {
             List<Cliente> clientes = clienteService.findAllClientes(); // Obtiene las entidades del servicio
+
+                if(clientes.isEmpty()){
+                    return new ResponseEntity<>(
+                        MensajeResponse.builder()
+                            .mensaje("NO HAY REGISTROS")
+                            .object(clientes)
+                            .build()
+                        , HttpStatus.OK);
+                }
+
             List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
     
                 for (Cliente cliente : clientes) {
@@ -148,6 +158,16 @@ public class ClienteController {
     
         try {
             List<Cliente> clientes = clienteService.findClientesByNombreLike(nombre); // Obtiene las entidades del servicio
+            
+                if(clientes.isEmpty()){
+                    return new ResponseEntity<>(
+                        MensajeResponse.builder()
+                            .mensaje("NO HAY REGISTROS")
+                            .object(clientes)
+                            .build()
+                        , HttpStatus.OK);
+                }            
+
             List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
     
                 for (Cliente cliente : clientes) {
@@ -179,6 +199,16 @@ public class ClienteController {
                                                 @RequestParam(value = "apellido", required = false) String apellido){
         try {
             List<Cliente> clientes = clienteService.findClientesByNameOrLastName(nombre, apellido); // Obtiene las entidades del servicio
+            
+                if(clientes.isEmpty()){
+                    return new ResponseEntity<>(
+                        MensajeResponse.builder()
+                            .mensaje("NO HAY REGISTROS")
+                            .object(clientes)
+                            .build()
+                        , HttpStatus.OK);
+                }            
+            
             List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
     
                 for (Cliente cliente : clientes) {
