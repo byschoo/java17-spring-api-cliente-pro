@@ -1,13 +1,13 @@
-package com.byschoo.apirest_pro_studentdto;
+package com.byschoo.apirest_pro_clientesdto;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ApirestProStudentdtoApplication {
+public class ApirestProClientetoApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ApirestProStudentdtoApplication.class, args);
+		SpringApplication.run(ApirestProClientetoApplication.class, args);
 	}
 
 }

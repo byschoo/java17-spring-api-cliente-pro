@@ -1,4 +1,4 @@
-package com.byschoo.apirest_pro_studentdto.Controller;
+package com.byschoo.apirest_pro_clientesdto.Controller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.byschoo.apirest_pro_studentdto.DTO.ClienteDTO;
-import com.byschoo.apirest_pro_studentdto.Model.Cliente;
-import com.byschoo.apirest_pro_studentdto.Payload.MensajeResponse;
-import com.byschoo.apirest_pro_studentdto.Service.iClienteService;
+import com.byschoo.apirest_pro_clientesdto.DTO.ClienteDTO;
+import com.byschoo.apirest_pro_clientesdto.Exceptions.BadRequestException;
+import com.byschoo.apirest_pro_clientesdto.Model.Cliente;
+import com.byschoo.apirest_pro_clientesdto.Payload.MensajeResponseSuccess;
+import com.byschoo.apirest_pro_clientesdto.Service.iClienteService;
 
 import jakarta.validation.Valid;
 
@@ -34,31 +35,27 @@ public class ClienteController {
     
     // POSTMAPPING ------------------------------------------------------------------------------------
     @PostMapping("cliente")
-    public ResponseEntity<?> saveCliente(@Valid @RequestBody ClienteDTO clienteDTO){
+    ResponseEntity<?> saveCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
 
         try {
             Cliente clienteSave = clienteService.saveCliente(clienteDTO);
             clienteDTO = convertirDeEntidadADTO(clienteSave);
             return new ResponseEntity<>(
-                MensajeResponse.builder()
-                .mensaje("CLIENTE GUARDADO CON EXITO")
-                .object(clienteDTO)
-                .build()
-                , HttpStatus.CREATED);
-
-            } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                .mensaje(exDt.getMessage())
+                MensajeResponseSuccess.builder()
+                    .mensaje("Cliente guardado satisfactoriamente")
                     .object(clienteDTO)
-                    .build()
-                , HttpStatus.INTERNAL_SERVER_ERROR);
+                    .build(),
+                HttpStatus.CREATED
+            );
+
+        } catch (DataAccessException exDt) {
+            throw  new BadRequestException(exDt.getMessage());
         }
     }
     
     //-------------------------------------------------------------------------------------------------
     @PostMapping("/clientes")
-    public ResponseEntity<?> saveAllClientes(@Valid @RequestBody List<ClienteDTO> clientesDTO) {
+    ResponseEntity<?> saveAllClientes(@Valid @RequestBody List<ClienteDTO> clientesDTO) {
 
         try {
             List<Cliente> clienteSaveAll = clienteService.saveAllClientes(clientesDTO); // Llama al servicio y retorna el resultado
@@ -67,43 +64,29 @@ public class ClienteController {
             for (Cliente cliente : clienteSaveAll) {
                 ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
                 clientesDTO.add(clienteDTO);
-                }
+            }
 
                 return new ResponseEntity<>(
-                MensajeResponse.builder()
-                .mensaje("CLIENTES GUARDADOS CON EXITO")
-                .object(clientesDTO)
-                .build()
-                , HttpStatus.CREATED);
+                    MensajeResponseSuccess.builder()
+                        .mensaje("Clientes guardados satisfactoriamente")
+                        .object(clientesDTO)
+                        .build(),
+                    HttpStatus.CREATED
+                );
                 
             } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje(exDt.getMessage())
-                    .object(clientesDTO)
-                    .build()
-                    , HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+                throw  new BadRequestException(exDt.getMessage());
+            } 
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     
     
     // GETMAPPING  ------------------------------------------------------------------------------------
     @GetMapping ("clientes")
-    public ResponseEntity<?> findAllClientes() {
-    
+    ResponseEntity<?> findAllClientes() {
+
         try {
             List<Cliente> clientes = clienteService.findAllClientes(); // Obtiene las entidades del servicio
-
-                if(clientes.isEmpty()){
-                    return new ResponseEntity<>(
-                        MensajeResponse.builder()
-                            .mensaje("NO HAY REGISTROS")
-                            .object(clientes)
-                            .build()
-                        , HttpStatus.OK);
-                }
-
             List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
     
                 for (Cliente cliente : clientes) {
@@ -112,62 +95,44 @@ public class ClienteController {
                 }
     
             return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje("BUSQUEDA EXITOSA")
+                MensajeResponseSuccess.builder()
+                    .mensaje("Búsqueda satisfactoria")
                     .object(clientesDTO) // Retorna la lista de DTOs
-                    .build()
-                , HttpStatus.OK);
-            
+                    .build(),
+                HttpStatus.OK
+            );
+
         } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje(exDt.getMessage())
-                    .object(null)
-                    .build()
-                , HttpStatus.INTERNAL_SERVER_ERROR);
-        }        
+            throw  new BadRequestException(exDt.getMessage());
+        }  
     }
     
     //-------------------------------------------------------------------------------------------------
     @GetMapping ("cliente/{id}")
-    public ResponseEntity<?> findClienteById(@PathVariable Long id){
+    ResponseEntity<?> findClienteById(@PathVariable Long id) {
     
         try {
             Cliente cliente = clienteService.findClienteById(id); // Obtiene la entidad del servicio
             ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte la entidad a DTO
+
             return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje("BUSQUEDA EXITOSA")
+                MensajeResponseSuccess.builder()
+                    .mensaje("Búsqueda satisfactoria")
                     .object(clienteDTO) // Retorna la lista de DTO
-                    .build()
-                , HttpStatus.OK);
-    
+                    .build(),
+                HttpStatus.OK
+            );
+
         } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje(exDt.getMessage())
-                    .object(null)
-                    .build()
-                , HttpStatus.INTERNAL_SERVER_ERROR);
+            throw  new BadRequestException(exDt.getMessage());
         }
     }
     
     //-------------------------------------------------------------------------------------------------
     @GetMapping ("clientes/{nombre}")
-    public ResponseEntity<?> findClientesByName(@PathVariable String nombre){
-    
+    ResponseEntity<?> findClientesByName(@PathVariable String nombre) {
         try {
             List<Cliente> clientes = clienteService.findClientesByNombreLike(nombre); // Obtiene las entidades del servicio
-            
-                if(clientes.isEmpty()){
-                    return new ResponseEntity<>(
-                        MensajeResponse.builder()
-                            .mensaje("NO HAY REGISTROS")
-                            .object(clientes)
-                            .build()
-                        , HttpStatus.OK);
-                }            
-
             List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
     
                 for (Cliente cliente : clientes) {
@@ -176,39 +141,26 @@ public class ClienteController {
                 }
     
             return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje("BUSQUEDA EXITOSA")
+                MensajeResponseSuccess.builder()
+                    .mensaje("Búsqueda satisfactoria")
                     .object(clientesDTO) // Retorna la lista de DTOs
-                    .build()
-                , HttpStatus.OK);
-    
+                    .build(),
+                HttpStatus.OK
+            );
+
         } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje(exDt.getMessage())
-                    .object(null)
-                    .build()
-                , HttpStatus.INTERNAL_SERVER_ERROR);
+            throw  new BadRequestException(exDt.getMessage());
         }
     }
     
     //-------------------------------------------------------------------------------------------------
     @GetMapping ("clientes/buscar")
-    public ResponseEntity<?> findClientesByNameOrLastName(
-                                                @RequestParam(value = "nombre", required = false) String nombre,
-                                                @RequestParam(value = "apellido", required = false) String apellido){
+    ResponseEntity<?> findClientesByNameOrLastName (
+                                @RequestParam(value = "nombre", required = false) String nombre,
+                                @RequestParam(value = "apellido", required = false) String apellido) {
+
         try {
             List<Cliente> clientes = clienteService.findClientesByNameOrLastName(nombre, apellido); // Obtiene las entidades del servicio
-            
-                if(clientes.isEmpty()){
-                    return new ResponseEntity<>(
-                        MensajeResponse.builder()
-                            .mensaje("NO HAY REGISTROS")
-                            .object(clientes)
-                            .build()
-                        , HttpStatus.OK);
-                }            
-            
             List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
     
                 for (Cliente cliente : clientes) {
@@ -217,70 +169,60 @@ public class ClienteController {
                 }
     
             return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje("BUSQUEDA EXITOSA")
+                MensajeResponseSuccess.builder()
+                    .mensaje("Búsqueda satisfactoria")
                     .object(clientesDTO) // Retorna la lista de DTOs
-                    .build()
-                , HttpStatus.OK);
-    
+                    .build(),
+                HttpStatus.OK
+            );
+
         } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje(exDt.getMessage())
-                    .object(null)
-                    .build()
-                , HttpStatus.INTERNAL_SERVER_ERROR);
-        }        
+            throw  new BadRequestException(exDt.getMessage());
+        }
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     
     
     // PUTMAPPING  ------------------------------------------------------------------------------------
     @PutMapping ("cliente")
-    public ResponseEntity<?> updateCliente(@Valid @RequestBody ClienteDTO clienteDTO){
+    ResponseEntity<?> updateCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
 
         try {
             Cliente clienteUpdate = clienteService.updateCliente(clienteDTO);  // Llama al servicio
             clienteDTO = convertirDeEntidadADTO(clienteUpdate);
+            
             return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje("CLIENTE ACTUALIZADO CON EXITO")
+                MensajeResponseSuccess.builder()
+                    .mensaje("Datos del cliente actualizados satisfactoriamente")
                     .object(clienteDTO)
-                    .build()
-                , HttpStatus.CREATED);       
+                    .build(),
+                HttpStatus.CREATED
+            );       
 
         } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje(exDt.getMessage())
-                    .object(clienteDTO)
-                    .build()
-                , HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+            throw  new BadRequestException(exDt.getMessage());
+        }  
     }
 
 
     @PutMapping ("cliente/{id}")
-    public ResponseEntity<?> updateCliente(@PathVariable Long id, 
-                                           @Valid @RequestBody ClienteDTO clienteDTO){
+    ResponseEntity<?> updateCliente(@Valid @RequestBody ClienteDTO clienteDTO,
+                                           @PathVariable Long id) {
 
         try {
-            Cliente clienteUpdate = clienteService.updateCliente(id, clienteDTO);  // Llama al servicio
+            Cliente clienteUpdate = clienteService.updateCliente(clienteDTO, id);  // Llama al servicio
             clienteDTO = convertirDeEntidadADTO(clienteUpdate);
+            
             return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje("CLIENTE ACTUALIZADO CON EXITO")
-                    .object(clienteDTO)
-                    .build()
-                , HttpStatus.CREATED);       
+                MensajeResponseSuccess.builder()
+                    .mensaje("Datos del cliente actualizados satisfactoriamente")
+                    .object(clienteDTO)  // Retorna la lista de DTOs
+                    .build(),
+                HttpStatus.CREATED
+            );
 
         } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje(exDt.getMessage())
-                    .object(clienteDTO)
-                    .build()
-                , HttpStatus.INTERNAL_SERVER_ERROR);
+            throw  new BadRequestException(exDt.getMessage());
         }
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -288,20 +230,15 @@ public class ClienteController {
         
     // DELETEMAPPING  ---------------------------------------------------------------------------------
     @DeleteMapping("cliente/{id}")
-    public ResponseEntity<?> deleteCliente(@PathVariable Long id){
+    ResponseEntity<?> deleteCliente(@PathVariable Long id) {
 
         try {
-            Cliente clienteDelete = clienteService.findClienteById(id);
-            clienteService.delete(clienteDelete);
-            return new ResponseEntity<>(clienteDelete, HttpStatus.NO_CONTENT);
+
+            clienteService.deleteCliente(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
         } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                MensajeResponse.builder()
-                    .mensaje(exDt.getMessage())
-                    .object(null)
-                    .build()
-                , HttpStatus.INTERNAL_SERVER_ERROR);
+            throw  new BadRequestException(exDt.getMessage());
         }
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

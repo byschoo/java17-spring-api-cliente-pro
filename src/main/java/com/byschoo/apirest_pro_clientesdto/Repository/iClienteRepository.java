@@ -1,4 +1,4 @@
-package com.byschoo.apirest_pro_studentdto.Repository;
+package com.byschoo.apirest_pro_clientesdto.Repository;
 
 import java.util.List;
 
@@ -6,12 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import com.byschoo.apirest_pro_studentdto.Model.Cliente;
+import com.byschoo.apirest_pro_clientesdto.Model.Cliente;
 
 public interface iClienteRepository extends CrudRepository<Cliente, Long>{
     // Métodos personalizados
     @Query("SELECT s FROM Cliente s WHERE s.nombre LIKE %:nombre%")
-    List<Cliente> findByNombreLike(String nombre);
+    List<Cliente> findByNombresLike(String nombre);
 
     /**busqueda por varios campos, lo que se quiere es que cuando ingrese una letra, este se búsque  
      * en los dos campos nombre y apellido no por separado la cual lo realiza la siguiente consulta

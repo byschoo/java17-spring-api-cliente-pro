@@ -1,9 +1,9 @@
-package com.byschoo.apirest_pro_studentdto.Service;
+package com.byschoo.apirest_pro_clientesdto.Service;
 
 import java.util.List;
 
-import com.byschoo.apirest_pro_studentdto.DTO.ClienteDTO;
-import com.byschoo.apirest_pro_studentdto.Model.Cliente;
+import com.byschoo.apirest_pro_clientesdto.DTO.ClienteDTO;
+import com.byschoo.apirest_pro_clientesdto.Model.Cliente;
 
 public interface iClienteService {
 
@@ -17,6 +17,7 @@ public interface iClienteService {
     List<Cliente> findAllClientes();
     Cliente findClienteById(Long id);
 
+
     // Búsqueda personalizada en Repositorio
     List<Cliente> findClientesByNombreLike(String nombre);
 
@@ -27,12 +28,12 @@ public interface iClienteService {
     
     // PUTMAPPING -------------------------------------------------------------------------------------
     Cliente updateCliente(ClienteDTO clienteDTO);
-    Cliente updateCliente(Long id, ClienteDTO clienteDTO);
+    Cliente updateCliente(ClienteDTO clienteDTO, Long id);
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
     // DELETEMAPPING ----------------------------------------------------------------------------------
-    void delete(Cliente cliente); //CRUDRepository tiene métodos para eliminar por el ID o enviando la entidad completa.
+    void deleteCliente(Long id); //CRUDRepository tiene métodos para eliminar por el ID o enviando la entidad completa.
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 }
