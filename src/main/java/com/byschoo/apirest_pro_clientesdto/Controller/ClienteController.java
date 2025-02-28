@@ -3,8 +3,6 @@ package com.byschoo.apirest_pro_clientesdto.Controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,65 +16,67 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.byschoo.apirest_pro_clientesdto.DTO.ClienteDTO;
-import com.byschoo.apirest_pro_clientesdto.Exceptions.BadRequestException;
 import com.byschoo.apirest_pro_clientesdto.Model.Cliente;
-import com.byschoo.apirest_pro_clientesdto.Payload.MensajeResponseSuccess;
+import com.byschoo.apirest_pro_clientesdto.Payload.MessageResponseSuccess;
 import com.byschoo.apirest_pro_clientesdto.Service.iClienteService;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/api/v1")
 public class ClienteController {
 
-    @Autowired
-    private iClienteService clienteService;
+    private final iClienteService clienteService;
+
+    public ClienteController(final iClienteService clienteService) {
+        this.clienteService = clienteService;
+    }
+    
+
     
     // POSTMAPPING ------------------------------------------------------------------------------------
     @PostMapping("cliente")
     ResponseEntity<?> saveCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
+        log.debug("\"CONTROLLER LAYER - ClienteController POSTMAPPING REQUESTED - saveCliente - EndPoint ../api/v1/cliente\""); // SLF4j para loggear
+        
+        log.debug("\"CONTROLLER LAYER - SENDING REQUEST TO SERVICE LAYER\"");
+        Cliente clienteSave = clienteService.saveCliente(clienteDTO);
+        
+        log.debug("\"CONTROLLER LAYER - PREPARING RESPONSE - CONVERTING ENTITY to DTO\"");
+        clienteDTO = convertirDeEntidadADTO(clienteSave);
 
-        try {
-            Cliente clienteSave = clienteService.saveCliente(clienteDTO);
-            clienteDTO = convertirDeEntidadADTO(clienteSave);
-            return new ResponseEntity<>(
-                MensajeResponseSuccess.builder()
-                    .mensaje("Cliente guardado satisfactoriamente")
-                    .object(clienteDTO)
-                    .build(),
-                HttpStatus.CREATED
-            );
-
-        } catch (DataAccessException exDt) {
-            throw  new BadRequestException(exDt.getMessage());
-        }
+        log.debug("\"CONTROLLER LAYER - TRANSMITTING RESPONSE\"");
+        return new ResponseEntity<>(
+            MessageResponseSuccess.builder()
+                .mensaje("Cliente guardado satisfactoriamente")
+                .object(clienteDTO)
+                .build(),
+            HttpStatus.CREATED
+        );
     }
     
     //-------------------------------------------------------------------------------------------------
     @PostMapping("/clientes")
     ResponseEntity<?> saveAllClientes(@Valid @RequestBody List<ClienteDTO> clientesDTO) {
+        log.debug("\"ClienteController POSTMAPPING REQUESTED: saveALLClienteS - EndPoint /clienteS\""); // SLF4j para loggear
 
-        try {
-            List<Cliente> clienteSaveAll = clienteService.saveAllClientes(clientesDTO); // Llama al servicio y retorna el resultado
-            clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
+        List<Cliente> clienteSaveAll = clienteService.saveAllClientes(clientesDTO); // Llama al servicio y retorna el resultado
+        clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
 
-            for (Cliente cliente : clienteSaveAll) {
-                ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
-                clientesDTO.add(clienteDTO);
-            }
+        for (Cliente cliente : clienteSaveAll) {
+            ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
+            clientesDTO.add(clienteDTO);
+        }
 
-                return new ResponseEntity<>(
-                    MensajeResponseSuccess.builder()
-                        .mensaje("Clientes guardados satisfactoriamente")
-                        .object(clientesDTO)
-                        .build(),
-                    HttpStatus.CREATED
-                );
-                
-            } catch (DataAccessException exDt) {
-                throw  new BadRequestException(exDt.getMessage());
-            } 
+        return new ResponseEntity<>(
+            MessageResponseSuccess.builder()
+                .mensaje("Clientes guardados satisfactoriamente")
+                .object(clientesDTO)
+                .build(),
+            HttpStatus.CREATED
+        );
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     
@@ -84,73 +84,62 @@ public class ClienteController {
     // GETMAPPING  ------------------------------------------------------------------------------------
     @GetMapping ("clientes")
     ResponseEntity<?> findAllClientes() {
+        log.debug("\"ClienteController GETMAPPING REQUESTED: findAllClientes - EndPoint /clienteS\""); // SLF4j para loggear
 
-        try {
-            List<Cliente> clientes = clienteService.findAllClientes(); // Obtiene las entidades del servicio
-            List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
-    
-                for (Cliente cliente : clientes) {
-                    ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
-                    clientesDTO.add(clienteDTO);
-                }
-    
-            return new ResponseEntity<>(
-                MensajeResponseSuccess.builder()
-                    .mensaje("Búsqueda satisfactoria")
-                    .object(clientesDTO) // Retorna la lista de DTOs
-                    .build(),
-                HttpStatus.OK
-            );
+        List<Cliente> clientes = clienteService.findAllClientes(); // Obtiene las entidades del servicio
+        List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
 
-        } catch (DataAccessException exDt) {
-            throw  new BadRequestException(exDt.getMessage());
-        }  
+        for (Cliente cliente : clientes) {
+            ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
+            clientesDTO.add(clienteDTO);
+        }
+
+        return new ResponseEntity<>(
+            MessageResponseSuccess.builder()
+                .mensaje("Búsqueda satisfactoria")
+                .object(clientesDTO) // Retorna la lista de DTOs
+                .build(),
+            HttpStatus.OK
+        );
     }
     
     //-------------------------------------------------------------------------------------------------
     @GetMapping ("cliente/{id}")
     ResponseEntity<?> findClienteById(@PathVariable Long id) {
-    
-        try {
-            Cliente cliente = clienteService.findClienteById(id); // Obtiene la entidad del servicio
-            ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte la entidad a DTO
+        log.debug("\"ClienteController GETMAPPING REQUESTED: findClienteById - EndPoint /cliente/{id}\""); // SLF4j para loggear
 
-            return new ResponseEntity<>(
-                MensajeResponseSuccess.builder()
-                    .mensaje("Búsqueda satisfactoria")
-                    .object(clienteDTO) // Retorna la lista de DTO
-                    .build(),
-                HttpStatus.OK
-            );
+        Cliente cliente = clienteService.findClienteById(id); // Obtiene la entidad del servicio
+        ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte la entidad a DTO
 
-        } catch (DataAccessException exDt) {
-            throw  new BadRequestException(exDt.getMessage());
-        }
-    }
+        return new ResponseEntity<>(
+            MessageResponseSuccess.builder()
+                .mensaje("Búsqueda satisfactoria")
+                .object(clienteDTO) // Retorna la lista de DTO
+                .build(),
+            HttpStatus.OK
+        );
+}
     
     //-------------------------------------------------------------------------------------------------
     @GetMapping ("clientes/{nombre}")
     ResponseEntity<?> findClientesByName(@PathVariable String nombre) {
-        try {
-            List<Cliente> clientes = clienteService.findClientesByNombreLike(nombre); // Obtiene las entidades del servicio
-            List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
-    
-                for (Cliente cliente : clientes) {
-                    ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
-                    clientesDTO.add(clienteDTO);
-                }
-    
-            return new ResponseEntity<>(
-                MensajeResponseSuccess.builder()
-                    .mensaje("Búsqueda satisfactoria")
-                    .object(clientesDTO) // Retorna la lista de DTOs
-                    .build(),
-                HttpStatus.OK
-            );
+        log.debug("\"ClienteController GETMAPPING REQUESTED: findClientesByName - EndPoint /clientes/{nombre}\""); // SLF4j para loggear
 
-        } catch (DataAccessException exDt) {
-            throw  new BadRequestException(exDt.getMessage());
+        List<Cliente> clientes = clienteService.findClientesByNombreLike(nombre); // Obtiene las entidades del servicio
+        List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
+
+        for (Cliente cliente : clientes) {
+            ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
+            clientesDTO.add(clienteDTO);
         }
+
+        return new ResponseEntity<>(
+            MessageResponseSuccess.builder()
+                .mensaje("Búsqueda satisfactoria")
+                .object(clientesDTO) // Retorna la lista de DTOs
+                .build(),
+            HttpStatus.OK
+        );
     }
     
     //-------------------------------------------------------------------------------------------------
@@ -158,27 +147,23 @@ public class ClienteController {
     ResponseEntity<?> findClientesByNameOrLastName (
                                 @RequestParam(value = "nombre", required = false) String nombre,
                                 @RequestParam(value = "apellido", required = false) String apellido) {
+        log.debug("\"ClienteController GETMAPPING REQUESTED: findClientesByNameOrLastName - EndPoint /clientes/buscar\""); // SLF4j para loggear
 
-        try {
-            List<Cliente> clientes = clienteService.findClientesByNameOrLastName(nombre, apellido); // Obtiene las entidades del servicio
-            List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
-    
-                for (Cliente cliente : clientes) {
-                    ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
-                    clientesDTO.add(clienteDTO);
-                }
-    
-            return new ResponseEntity<>(
-                MensajeResponseSuccess.builder()
-                    .mensaje("Búsqueda satisfactoria")
-                    .object(clientesDTO) // Retorna la lista de DTOs
-                    .build(),
-                HttpStatus.OK
-            );
+        List<Cliente> clientes = clienteService.findClientesByNameOrLastName(nombre, apellido); // Obtiene las entidades del servicio
+        List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
 
-        } catch (DataAccessException exDt) {
-            throw  new BadRequestException(exDt.getMessage());
-        }
+            for (Cliente cliente : clientes) {
+                ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
+                clientesDTO.add(clienteDTO);
+            }
+
+        return new ResponseEntity<>(
+            MessageResponseSuccess.builder()
+                .mensaje("Búsqueda satisfactoria")
+                .object(clientesDTO) // Retorna la lista de DTOs
+                .build(),
+            HttpStatus.OK
+        );
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     
@@ -186,44 +171,37 @@ public class ClienteController {
     // PUTMAPPING  ------------------------------------------------------------------------------------
     @PutMapping ("cliente")
     ResponseEntity<?> updateCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
+        log.debug("\"ClienteController PUTMAPPING REQUESTED: updateCliente - EndPoint /cliente\""); // SLF4j para loggear
 
-        try {
-            Cliente clienteUpdate = clienteService.updateCliente(clienteDTO);  // Llama al servicio
-            clienteDTO = convertirDeEntidadADTO(clienteUpdate);
-            
-            return new ResponseEntity<>(
-                MensajeResponseSuccess.builder()
-                    .mensaje("Datos del cliente actualizados satisfactoriamente")
-                    .object(clienteDTO)
-                    .build(),
-                HttpStatus.CREATED
-            );       
+        Cliente clienteUpdate = clienteService.updateCliente(clienteDTO);  // Llama al servicio
+        clienteDTO = convertirDeEntidadADTO(clienteUpdate);
+        
+        return new ResponseEntity<>(
+            MessageResponseSuccess.builder()
+                .mensaje("Datos del cliente actualizados satisfactoriamente")
+                .object(clienteDTO)
+                .build(),
+            HttpStatus.CREATED
+        );       
 
-        } catch (DataAccessException exDt) {
-            throw  new BadRequestException(exDt.getMessage());
-        }  
     }
 
 
     @PutMapping ("cliente/{id}")
     ResponseEntity<?> updateCliente(@Valid @RequestBody ClienteDTO clienteDTO,
                                            @PathVariable Long id) {
+        log.debug("\"ClienteController PUTMAPPING REQUESTED: updateCliente - EndPoint /cliente/{id}\""); // SLF4j para loggear
 
-        try {
-            Cliente clienteUpdate = clienteService.updateCliente(clienteDTO, id);  // Llama al servicio
-            clienteDTO = convertirDeEntidadADTO(clienteUpdate);
-            
-            return new ResponseEntity<>(
-                MensajeResponseSuccess.builder()
-                    .mensaje("Datos del cliente actualizados satisfactoriamente")
-                    .object(clienteDTO)  // Retorna la lista de DTOs
-                    .build(),
-                HttpStatus.CREATED
-            );
-
-        } catch (DataAccessException exDt) {
-            throw  new BadRequestException(exDt.getMessage());
-        }
+        Cliente clienteUpdate = clienteService.updateCliente(clienteDTO, id);  // Llama al servicio
+        clienteDTO = convertirDeEntidadADTO(clienteUpdate);
+        
+        return new ResponseEntity<>(
+            MessageResponseSuccess.builder()
+                .mensaje("Datos del cliente actualizados satisfactoriamente")
+                .object(clienteDTO)  // Retorna la lista de DTOs
+                .build(),
+            HttpStatus.CREATED
+        );
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     
@@ -231,15 +209,10 @@ public class ClienteController {
     // DELETEMAPPING  ---------------------------------------------------------------------------------
     @DeleteMapping("cliente/{id}")
     ResponseEntity<?> deleteCliente(@PathVariable Long id) {
+        log.debug("\"ClienteController DELETEMAPPING REQUESTED: deleteCliente - EndPoint /cliente/{id}\""); // SLF4j para loggear
 
-        try {
-
-            clienteService.deleteCliente(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-
-        } catch (DataAccessException exDt) {
-            throw  new BadRequestException(exDt.getMessage());
-        }
+        clienteService.deleteCliente(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

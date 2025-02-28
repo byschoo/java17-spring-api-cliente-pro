@@ -1,0 +1,7 @@
+BYSCHOO INC.
+SPRING BOOT RESTFUL API
+Derechos Reservados
+
+${spring.application.name} is running on Spring Boot ${spring-boot.version}
+Active Profile: ${spring.profiles.Active}
+

@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,16 +25,27 @@ import com.byschoo.apirest_pro_clientesdto.Repository.iClienteRepository;
 
 @Service
 public class ClienteServiceImpl implements iClienteService {
-
     
-    @Autowired
-    private iClienteRepository clienteRepository;
+    private final iClienteRepository clienteRepository;
+
+    public ClienteServiceImpl(final iClienteRepository clienteRepository) {
+        this.clienteRepository = clienteRepository;
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(ClienteServiceImpl.class);
+
+
 
     // POSTMAPPING ------------------------------------------------------------------------------------
     @Transactional
     @Override
     public Cliente saveCliente(ClienteDTO clienteDTO) {
+        logger.debug("\"SERVICE LAYER - ClienteServiceImpl REQUESTED: saveCliente\""); // SLF4j para loggear
+        
+        logger.debug("\"SERVICE LAYER - CONVERTING DTO to ENTITY\"");
         Cliente cliente = convertirDeDTOaEntidad(clienteDTO); // Llama al método de conversión
+
+        logger.info("SERVICE LAYER - ADDING Cliente into DB.");
         return clienteRepository.save(cliente);
     }
 
@@ -42,12 +54,14 @@ public class ClienteServiceImpl implements iClienteService {
     @Override
     public List<Cliente> saveAllClientes(List<ClienteDTO> clientesDTO) {
         List<Cliente> clientes = new ArrayList<>();
+        logger.debug("\"ClienteServiceImpl REQUESTED: saveCliente\""); // SLF4j para loggear
 
         for (ClienteDTO clienteDTO : clientesDTO) {
             Cliente cliente = convertirDeDTOaEntidad(clienteDTO); // Usamos el método de conversión
             clientes.add(cliente);
         }
 
+        logger.info("ADDING Clientes into DB.");
         return (List<Cliente>) clienteRepository.saveAll(clientes);
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -58,7 +72,7 @@ public class ClienteServiceImpl implements iClienteService {
     public List<Cliente> findAllClientes() {
         return Optional.ofNullable((List<Cliente>) clienteRepository.findAll())
             .filter(clientes -> !clientes.isEmpty()) // Filtra si la lista no está vacía
-            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de clientes", "Exc-E4006", null, HttpStatus.NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de clientes", "Exc-E4006", HttpStatus.NOT_FOUND));
     }
     
     
@@ -71,7 +85,7 @@ public class ClienteServiceImpl implements iClienteService {
         return clienteRepository.findById(id)
 
             // Se envían los argumentos al constructor y se construye el mensaje en el Controller
-            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", null, HttpStatus.NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", HttpStatus.NOT_FOUND));
     }
 
     //-------------------------------------------------------------------------------------------------
@@ -80,7 +94,7 @@ public class ClienteServiceImpl implements iClienteService {
     public List<Cliente> findClientesByNombreLike(String nombre) {
         return Optional.ofNullable((List<Cliente>) clienteRepository.findByNombresLike(nombre))
             .filter(clientes -> !clientes.isEmpty())
-            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de clientes con el nombre: " + nombre, "Exc-E4007", null, HttpStatus.NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de clientes con el nombre: " + nombre, "Exc-E4007", HttpStatus.NOT_FOUND));
     }
     
     //-------------------------------------------------------------------------------------------------
@@ -89,7 +103,7 @@ public class ClienteServiceImpl implements iClienteService {
     public List<Cliente> findClientesByNameOrLastName(String nombre, String apellido) {
         return Optional.ofNullable((List<Cliente>) clienteRepository.findByNameOrLastName(nombre, apellido))  // Obtiene las entidades del repositorio
             .filter(clientes -> !clientes.isEmpty())
-            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de clientes con la información suministrada", "Exc-E4007", null, HttpStatus.NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de clientes con la información suministrada", "Exc-E4007", HttpStatus.NOT_FOUND));
     }    
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -100,7 +114,7 @@ public class ClienteServiceImpl implements iClienteService {
         Long id = clienteDTO.getId(); // Se obtiene el ID del DTO
 
         Cliente clienteUpdate = clienteRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", null, HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", HttpStatus.NOT_FOUND));
 
         clienteUpdate.setNombre(clienteDTO.getNombre());
         clienteUpdate.setApellido(clienteDTO.getApellido());
@@ -115,7 +129,7 @@ public class ClienteServiceImpl implements iClienteService {
     @Override
     public Cliente updateCliente(ClienteDTO clienteDTO, Long id) {
         Cliente clienteUpdate = clienteRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", null, HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", HttpStatus.NOT_FOUND));
 
 
         clienteUpdate.setNombre(clienteDTO.getNombre());

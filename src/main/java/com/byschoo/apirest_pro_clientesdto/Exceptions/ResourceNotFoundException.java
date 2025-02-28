@@ -11,21 +11,17 @@ import lombok.EqualsAndHashCode;
 public class ResourceNotFoundException extends RuntimeException{
 
     private String code; // Código dinámico específico para cada una de las excepciones
-    private Object fieldValue;
     private HttpStatus status; // Estatus dinámico específico para cada una de las excepciones
 
-
-    public ResourceNotFoundException(String message, String code, Object fieldValue, HttpStatus status) {
+    public ResourceNotFoundException(String message, String code, HttpStatus status) {
         super(message);
         this.code = code;
-        this.fieldValue = fieldValue;
         this.status = status;
     }
 
-    public ResourceNotFoundException(String message, String code, Object fieldValue, HttpStatus status, Throwable cause) {
+    public ResourceNotFoundException(String message, String code, HttpStatus status, Throwable cause) {
         super(message, cause);
         this.code = code;
-        this.fieldValue = fieldValue;
         this.status = status;
     }
 }
