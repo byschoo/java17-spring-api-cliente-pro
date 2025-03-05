@@ -1,8 +1,9 @@
 package com.byschoo.apirest_pro_clientesdto.Controller;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.byschoo.apirest_pro_clientesdto.DAO.Model.Cliente;
+import com.byschoo.apirest_pro_clientesdto.DAO.Service.iClienteService;
 import com.byschoo.apirest_pro_clientesdto.DTO.ClienteDTO;
-import com.byschoo.apirest_pro_clientesdto.Model.Cliente;
 import com.byschoo.apirest_pro_clientesdto.Payload.MessageResponseSuccess;
-import com.byschoo.apirest_pro_clientesdto.Service.iClienteService;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
     
+    private final ModelMapper modelMapper = new ModelMapper();
 
     
     // POSTMAPPING ------------------------------------------------------------------------------------
@@ -45,7 +47,7 @@ public class ClienteController {
         Cliente clienteSave = clienteService.saveCliente(clienteDTO);
         
         log.debug("\"CONTROLLER LAYER - PREPARING RESPONSE - CONVERTING ENTITY to DTO\"");
-        clienteDTO = convertirDeEntidadADTO(clienteSave);
+        clienteDTO = modelMapper.map(clienteSave, ClienteDTO.class);
 
         log.debug("\"CONTROLLER LAYER - TRANSMITTING RESPONSE\"");
         return new ResponseEntity<>(
@@ -63,12 +65,10 @@ public class ClienteController {
         log.debug("\"ClienteController POSTMAPPING REQUESTED: saveALLClienteS - EndPoint /clienteS\""); // SLF4j para loggear
 
         List<Cliente> clienteSaveAll = clienteService.saveAllClientes(clientesDTO); // Llama al servicio y retorna el resultado
-        clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
-
-        for (Cliente cliente : clienteSaveAll) {
-            ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
-            clientesDTO.add(clienteDTO);
-        }
+        
+        clientesDTO = clienteSaveAll.stream()
+            .map(cliente -> modelMapper.map(cliente, ClienteDTO.class))
+            .collect(Collectors.toList());
 
         return new ResponseEntity<>(
             MessageResponseSuccess.builder()
@@ -87,12 +87,10 @@ public class ClienteController {
         log.debug("\"ClienteController GETMAPPING REQUESTED: findAllClientes - EndPoint /clienteS\""); // SLF4j para loggear
 
         List<Cliente> clientes = clienteService.findAllClientes(); // Obtiene las entidades del servicio
-        List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
 
-        for (Cliente cliente : clientes) {
-            ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
-            clientesDTO.add(clienteDTO);
-        }
+        List<ClienteDTO> clientesDTO = clientes.stream()
+        .map(cliente -> modelMapper.map(cliente, ClienteDTO.class))
+        .collect(Collectors.toList());
 
         return new ResponseEntity<>(
             MessageResponseSuccess.builder()
@@ -109,7 +107,7 @@ public class ClienteController {
         log.debug("\"ClienteController GETMAPPING REQUESTED: findClienteById - EndPoint /cliente/{id}\""); // SLF4j para loggear
 
         Cliente cliente = clienteService.findClienteById(id); // Obtiene la entidad del servicio
-        ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte la entidad a DTO
+        ClienteDTO clienteDTO = modelMapper.map(cliente, ClienteDTO.class);
 
         return new ResponseEntity<>(
             MessageResponseSuccess.builder()
@@ -126,12 +124,10 @@ public class ClienteController {
         log.debug("\"ClienteController GETMAPPING REQUESTED: findClientesByName - EndPoint /clientes/{nombre}\""); // SLF4j para loggear
 
         List<Cliente> clientes = clienteService.findClientesByNombreLike(nombre); // Obtiene las entidades del servicio
-        List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
-
-        for (Cliente cliente : clientes) {
-            ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
-            clientesDTO.add(clienteDTO);
-        }
+        
+        List<ClienteDTO> clientesDTO = clientes.stream()
+            .map(cliente -> modelMapper.map(cliente, ClienteDTO.class))
+            .collect(Collectors.toList());
 
         return new ResponseEntity<>(
             MessageResponseSuccess.builder()
@@ -150,13 +146,11 @@ public class ClienteController {
         log.debug("\"ClienteController GETMAPPING REQUESTED: findClientesByNameOrLastName - EndPoint /clientes/buscar\""); // SLF4j para loggear
 
         List<Cliente> clientes = clienteService.findClientesByNameOrLastName(nombre, apellido); // Obtiene las entidades del servicio
-        List<ClienteDTO> clientesDTO = new ArrayList<>(); // Crea una lista para almacenar los DTOs
-
-            for (Cliente cliente : clientes) {
-                ClienteDTO clienteDTO = convertirDeEntidadADTO(cliente); // Convierte cada entidad a DTO
-                clientesDTO.add(clienteDTO);
-            }
-
+        
+        List<ClienteDTO> clientesDTO = clientes.stream()
+            .map(cliente -> modelMapper.map(cliente, ClienteDTO.class))
+            .collect(Collectors.toList());
+        
         return new ResponseEntity<>(
             MessageResponseSuccess.builder()
                 .mensaje("Búsqueda satisfactoria")
@@ -174,7 +168,7 @@ public class ClienteController {
         log.debug("\"ClienteController PUTMAPPING REQUESTED: updateCliente - EndPoint /cliente\""); // SLF4j para loggear
 
         Cliente clienteUpdate = clienteService.updateCliente(clienteDTO);  // Llama al servicio
-        clienteDTO = convertirDeEntidadADTO(clienteUpdate);
+        clienteDTO = modelMapper.map(clienteUpdate, ClienteDTO.class);
         
         return new ResponseEntity<>(
             MessageResponseSuccess.builder()
@@ -193,7 +187,7 @@ public class ClienteController {
         log.debug("\"ClienteController PUTMAPPING REQUESTED: updateCliente - EndPoint /cliente/{id}\""); // SLF4j para loggear
 
         Cliente clienteUpdate = clienteService.updateCliente(clienteDTO, id);  // Llama al servicio
-        clienteDTO = convertirDeEntidadADTO(clienteUpdate);
+        clienteDTO = modelMapper.map(clienteUpdate, ClienteDTO.class);
         
         return new ResponseEntity<>(
             MessageResponseSuccess.builder()
@@ -215,18 +209,5 @@ public class ClienteController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-    // Método para convertir --------------------------------------------------------------------------
-    private ClienteDTO convertirDeEntidadADTO(Cliente cliente) {
-        return ClienteDTO.builder()
-            .id(cliente.getId())
-            .nombre(cliente.getNombre())
-            .apellido(cliente.getApellido())
-            .correo(cliente.getCorreo())
-            .edad(cliente.getEdad())
-            .fechaRegistro(cliente.getFechaRegistro())
-            .build();
-    }
-    //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    
 }

@@ -1,4 +1,4 @@
-package com.byschoo.apirest_pro_clientesdto.Model;
+package com.byschoo.apirest_pro_clientesdto.DAO.Model;
 
 import java.io.Serializable;
 import java.util.Date;

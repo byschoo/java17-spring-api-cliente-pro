@@ -1,7 +1,6 @@
 package com.byschoo.apirest_pro_clientesdto.DTO;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
@@ -10,8 +9,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 // @Data de Lombok: Genera métodos getters y setters para todos los campos, equals(), toString() y hashCode().
 // @Builder de Lombok: Genera un constructor estático interno (llamado "builder") que te permite crear instancias de la clase.
@@ -19,10 +20,12 @@ import lombok.Data;
 // @NotBlank de la especificación de Bean Validation (JSR 380): Esta anotación va más allá de @NotNull. No solo verifica que el valor no sea null, sino que también verifica que la cadena no esté vacía después de eliminar los espacios en blanco al principio y al final. Es decir, no permite cadenas que solo contengan espacios en blanco.
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class ClienteDTO implements Serializable{
 
-    private final Long id;
+    private Long id;
 
     @NotBlank(message = "El nombre es obligatorio")
     @Pattern(regexp = "^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\\s]+$", message = "El nombre solo puede contener letras latinas y espacios")
@@ -47,6 +50,4 @@ public class ClienteDTO implements Serializable{
     @Max(value = 125, message = "La edad no puede ser mayor a 125")
     private int edad;
 
-
-    private final Date fechaRegistro;
 }

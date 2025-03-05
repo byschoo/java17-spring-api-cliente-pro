@@ -18,7 +18,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 
 public class FormatJsonLogger implements StructuredLogFormatter<ILoggingEvent> {
 
-    private final SimpleDateFormat sdf = new SimpleDateFormat("dd MM পূরণ HH:mm:ss.SSS");
+    private final SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy HH:mm:ss.SSS");
     private final String applicationName;
     private final String applicationVersion;
     private String hostname;

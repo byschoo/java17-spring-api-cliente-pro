@@ -12,7 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
-import com.byschoo.apirest_pro_clientesdto.Model.Cliente;
+import com.byschoo.apirest_pro_clientesdto.DAO.Model.Cliente;
+import com.byschoo.apirest_pro_clientesdto.DAO.Repository.iClienteRepository;
 
 
 @DataJpaTest

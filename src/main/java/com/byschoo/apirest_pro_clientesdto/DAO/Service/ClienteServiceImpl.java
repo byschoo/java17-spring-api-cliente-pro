@@ -1,19 +1,20 @@
-package com.byschoo.apirest_pro_clientesdto.Service;
+package com.byschoo.apirest_pro_clientesdto.DAO.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.byschoo.apirest_pro_clientesdto.DAO.Model.Cliente;
+import com.byschoo.apirest_pro_clientesdto.DAO.Repository.iClienteRepository;
 import com.byschoo.apirest_pro_clientesdto.DTO.ClienteDTO;
 import com.byschoo.apirest_pro_clientesdto.Exceptions.ResourceNotFoundException;
-import com.byschoo.apirest_pro_clientesdto.Model.Cliente;
-import com.byschoo.apirest_pro_clientesdto.Repository.iClienteRepository;
 
 
 /**
@@ -33,6 +34,7 @@ public class ClienteServiceImpl implements iClienteService {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ClienteServiceImpl.class);
+    private final ModelMapper modelMapper = new ModelMapper();
 
 
 
@@ -43,7 +45,7 @@ public class ClienteServiceImpl implements iClienteService {
         logger.debug("\"SERVICE LAYER - ClienteServiceImpl REQUESTED: saveCliente\""); // SLF4j para loggear
         
         logger.debug("\"SERVICE LAYER - CONVERTING DTO to ENTITY\"");
-        Cliente cliente = convertirDeDTOaEntidad(clienteDTO); // Llama al método de conversión
+        Cliente cliente = modelMapper.map(clienteDTO, Cliente.class); // Llama al método de conversión ModelMapper
 
         logger.info("SERVICE LAYER - ADDING Cliente into DB.");
         return clienteRepository.save(cliente);
@@ -53,13 +55,11 @@ public class ClienteServiceImpl implements iClienteService {
     @Transactional
     @Override
     public List<Cliente> saveAllClientes(List<ClienteDTO> clientesDTO) {
-        List<Cliente> clientes = new ArrayList<>();
         logger.debug("\"ClienteServiceImpl REQUESTED: saveCliente\""); // SLF4j para loggear
 
-        for (ClienteDTO clienteDTO : clientesDTO) {
-            Cliente cliente = convertirDeDTOaEntidad(clienteDTO); // Usamos el método de conversión
-            clientes.add(cliente);
-        }
+        List<Cliente> clientes = clientesDTO.stream()
+            .map(clienteDTO -> modelMapper.map(clienteDTO, Cliente.class))
+            .collect(Collectors.toList());
 
         logger.info("ADDING Clientes into DB.");
         return (List<Cliente>) clienteRepository.saveAll(clientes);
@@ -114,12 +114,12 @@ public class ClienteServiceImpl implements iClienteService {
         Long id = clienteDTO.getId(); // Se obtiene el ID del DTO
 
         Cliente clienteUpdate = clienteRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", HttpStatus.NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", HttpStatus.NOT_FOUND));
 
-        clienteUpdate.setNombre(clienteDTO.getNombre());
-        clienteUpdate.setApellido(clienteDTO.getApellido());
-        clienteUpdate.setCorreo(clienteDTO.getCorreo());
-        clienteUpdate.setEdad(clienteDTO.getEdad());
+            clienteUpdate.setNombre(clienteDTO.getNombre());
+            clienteUpdate.setApellido(clienteDTO.getApellido());
+            clienteUpdate.setCorreo(clienteDTO.getCorreo());
+            clienteUpdate.setEdad(clienteDTO.getEdad());
 
         return clienteRepository.save(clienteUpdate);
     }
@@ -129,13 +129,13 @@ public class ClienteServiceImpl implements iClienteService {
     @Override
     public Cliente updateCliente(ClienteDTO clienteDTO, Long id) {
         Cliente clienteUpdate = clienteRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", HttpStatus.NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException("No hay registros de cliente con el id: " + id, "Exc-E4007", HttpStatus.NOT_FOUND));
 
 
-        clienteUpdate.setNombre(clienteDTO.getNombre());
-        clienteUpdate.setApellido(clienteDTO.getApellido());
-        clienteUpdate.setCorreo(clienteDTO.getCorreo());
-        clienteUpdate.setEdad(clienteDTO.getEdad());
+            clienteUpdate.setNombre(clienteDTO.getNombre());
+            clienteUpdate.setApellido(clienteDTO.getApellido());
+            clienteUpdate.setCorreo(clienteDTO.getCorreo());
+            clienteUpdate.setEdad(clienteDTO.getEdad());
 
         return clienteRepository.save(clienteUpdate);
     }
@@ -153,14 +153,4 @@ public class ClienteServiceImpl implements iClienteService {
     //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-    // Métodos DeDTOaENTIDAD --------------------------------------------------------------------------
-    private Cliente convertirDeDTOaEntidad(ClienteDTO clienteDTO) {
-        return Cliente.builder()
-            .nombre(clienteDTO.getNombre())
-            .apellido(clienteDTO.getApellido())
-            .correo(clienteDTO.getCorreo())
-            .edad(clienteDTO.getEdad())
-            .build();
-    }
-    //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 }

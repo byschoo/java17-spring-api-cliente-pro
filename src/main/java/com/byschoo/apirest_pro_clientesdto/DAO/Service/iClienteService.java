@@ -1,9 +1,9 @@
-package com.byschoo.apirest_pro_clientesdto.Service;
+package com.byschoo.apirest_pro_clientesdto.DAO.Service;
 
 import java.util.List;
 
+import com.byschoo.apirest_pro_clientesdto.DAO.Model.Cliente;
 import com.byschoo.apirest_pro_clientesdto.DTO.ClienteDTO;
-import com.byschoo.apirest_pro_clientesdto.Model.Cliente;
 
 public interface iClienteService {
 
